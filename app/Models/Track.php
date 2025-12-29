@@ -7,5 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Track extends Model
 {
-    use HasFactory;
+    public function wave()
+    {
+        return $this->belongsTo(\App\Models\Wave::class);
+    }
 }

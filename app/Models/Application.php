@@ -7,5 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class Application extends Model
 {
-    use HasFactory;
+    public function studentProfile()
+    {
+        return $this->belongsTo(\App\Models\StudentProfile::class);
+    }
+
+    public function wave()
+    {
+        return $this->belongsTo(\App\Models\Wave::class);
+    }
+
+    public function track()
+    {
+        return $this->belongsTo(\App\Models\Track::class);
+    }
 }

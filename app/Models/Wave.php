@@ -7,5 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class Wave extends Model
 {
-    use HasFactory;
+    public function academicYear()
+    {
+        return $this->belongsTo(\App\Models\AcademicYear::class);
+    }
+
+    public function tracks()
+    {
+        return $this->hasMany(\App\Models\Track::class);
+    }
 }

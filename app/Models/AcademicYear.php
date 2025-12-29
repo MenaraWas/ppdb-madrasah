@@ -7,5 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class AcademicYear extends Model
 {
-    use HasFactory;
+    public function waves()
+    {
+        return $this->hasMany(\App\Models\Wave::class);
+    }
 }

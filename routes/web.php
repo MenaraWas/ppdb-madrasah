@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\PublicPpdbController;
 use Illuminate\Support\Facades\Route;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -16,3 +18,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/ppdb', [PublicPpdbController::class, 'home'])->name('ppdb.home');
+Route::post('/ppdb/initiate', [PublicPpdbController::class, 'initiate'])->name('ppdb.initiate');
+Route::get('/ppdb/status/{token}', [PublicPpdbController::class, 'status'])->name('ppdb.status');
