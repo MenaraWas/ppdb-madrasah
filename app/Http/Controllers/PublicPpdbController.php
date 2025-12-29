@@ -4,9 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
 use App\Models\Application;
+use App\Models\ApplicationDocument;
 use App\Models\StudentProfile;
 use App\Domain\PPDB\Services\StatusTokenService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+
 
 class PublicPpdbController extends Controller
 {
@@ -90,7 +94,43 @@ class PublicPpdbController extends Controller
         return view('ppdb.status', compact('application'));
     }
 
-    
+    public function uploadDocument(string $token, Request $request, StatusTokenService $tokenService)
+    {
+        $hash = $tokenService->hashToken($token);
+
+        $application = Application::where('status_token_hash', $hash)->firstOrFail();
+
+        $data = $request->validate([
+            'doc_type' => 'required|string|max:50',
+            'file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120', // 5MB
+        ]);
+
+        $file = $data['file'];
+
+        // simpan sementara
+        $safeDocType = Str::upper(preg_replace('/[^A-Z0-9_]+/i', '_', $data['doc_type']));
+        $tmpPath = $file->store("tmp_uploads/app_{$application->id}", 'local');
+
+        // updateOrCreate per jenis dokumen (replace file lama)
+        $doc = ApplicationDocument::updateOrCreate(
+            ['application_id' => $application->id, 'doc_type' => $safeDocType],
+            [
+                'original_filename' => $file->getClientOriginalName(),
+                'mime_type' => $file->getMimeType(),
+                'file_size_bytes' => $file->getSize(),
+                'checksum_sha256' => hash_file('sha256', Storage::disk('local')->path($tmpPath)),
+                'upload_status' => 'MENUNGGU_UPLOAD_DRIVE',
+                'temp_path' => $tmpPath,
+                'error_message' => null,
+                'retry_count' => 0,
+            ]
+        );
+
+        // Dispatch job upload ke Drive (kita buat di step 13)
+        \App\Jobs\UploadDocumentToDriveJob::dispatch($doc->id);
+
+        return back()->with('success', "Dokumen {$safeDocType} diterima dan sedang diproses.");
+    }
 
 
 }

@@ -49,4 +49,9 @@ class Application extends Model
     {
         return $this->belongsTo(\App\Models\Track::class);
     }
+
+    public function documents()
+    {
+        return $this->hasMany(ApplicationDocument::class);
+    }
 }
